@@ -1,0 +1,54 @@
+import random
+from ursina import Entity, color, destroy
+import config
+
+class WorldManager:
+    def __init__(self):
+        self.buildings = []
+        self.npc_list = []
+
+    def unload_current_city(self):
+        for b in self.buildings:
+            destroy(b)
+        for npc in self.npc_list:
+            destroy(npc)
+        self.buildings.clear()
+        self.npc_list.clear()
+
+    def load_city(self, city_name, player_state):
+        self.unload_current_city()
+        player_state.update_city_ui(city_name)
+        
+        city_data = config.CITIES_DB[city_name]
+        city_color = city_data["color"]
+        
+        # Генерация зданий по сиду (город всегда одинаковый при возвращении)
+        random.seed(city_name)
+        for _ in range(25):
+            x = random.randint(-40, 40)
+            z = random.randint(-40, 40)
+            if abs(x) < 8 and abs(z) < 8:
+                continue
+            h = random.randint(5, 20)
+            w = random.randint(4, 10)
+            
+            b = Entity(
+                model='cube',
+                position=(x, h/2, z),
+                scale=(w, h, w),
+                color=city_color,
+                texture='white_cube',
+                collider='box'
+            )
+            self.buildings.append(b)
+            
+        # Спавн сюжетного NPC (Красный куб)
+        npc = Entity(model='cube', color=color.red, position=(0, 1, 5), scale=(1, 2, 1), collider='box')
+        self.npc_list.append(npc)
+        
+        # Спавн телепорта (Золотой куб)
+        travel_terminal = Entity(model='cube', color=color.gold, position=(5, 1, -5), scale=(1, 1.5, 1), collider='box')
+        self.buildings.append(travel_terminal)
+        
+        player_state.show_log(f"Добро пожаловать в {city_name}!\n{city_data['desc']}")
+self.buildings8
